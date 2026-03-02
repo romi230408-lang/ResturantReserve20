@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "508817033327",
+    "project_id": "resturantreserve",
+    "storage_bucket": "resturantreserve.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:508817033327:android:de47b7c53fa9839ff5e59a",
+        "android_client_info": {
+          "package_name": "com.meitar.resturantreserve"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAj2XNl3sLDnM4DaCQX4kGnYSsmxaWVphY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

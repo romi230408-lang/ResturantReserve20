@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="ResturantReserve.Views.MainPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:ResturantReserve.ViewModels"
+    xmlns:m="clr-namespace:ResturantReserve.Models"
+    x:DataType="vm:MainPageVM"
+    BackgroundColor="#c773eb"
+    IsBusy="{Binding IsBusy}">
+    <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="30" Padding="40" BackgroundColor="#c773eb">
+        <VerticalStackLayout>
+            <Button
+            Grid.Column="1"
+            Margin="10"
+            Command="{Binding AddGameCommand}"
+            FontSize="Body"
+            TextColor="#fcd703"
+            HorizontalOptions="Fill"
+            Background="#8ac7eb"
+            Text="{x:Static m:Strings.AddGame}" />
+            <ListView ItemsSource="{Binding GamesList}" SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="m:GameModel">
+                        <ViewCell>
+                            <Grid ColumnDefinitions="*,2*,0.5*">
+                            <Label
+                            Grid.Column="0"
+                            Margin="20,0,0,0"
+                            FontAttributes="Bold"
+                            FontSize="20"
+                            HorizontalTextAlignment="Start"
+                            Text="{Binding HostName}" />
+                            <Label
+                            Grid.Column="1"
+                            FontSize="20"
+                            Text="{Binding Created}" />
+                            </Grid>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </VerticalStackLayout>
+    </StackLayout>
+</ContentPage>

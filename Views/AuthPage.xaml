@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="ResturantReserve.Views.AuthPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:m="clr-namespace:ResturantReserve.Models"
+    xmlns:vm="clr-namespace:ResturantReserve.ViewModels"
+    IsBusy="{Binding IsBusy}"
+    x:DataType="vm:AuthPageVM">
+
+    <VerticalStackLayout Padding="5" Spacing="10" BackgroundColor="#c773eb">
+        <Label
+            Margin="50"
+            FontSize="70"
+            HorizontalOptions="Center"
+            Text="{Binding UserStateAction}"
+            TextColor="#fcd703"
+            FontFamily="BevasNeue"/>
+        <Label
+            Margin="0,0,0,28"
+            FontAttributes="Bold"
+            FontFamily="BebasNeue"
+            FontSize="48"
+            HorizontalOptions="Center"
+            TextColor="#fcd703" />
+        <Grid >
+            <Border Stroke="#fcd703" StrokeThickness="5" StrokeShape="RoundRectangle 10">
+                <Entry Placeholder="{x:Static m:Strings.Name}" Text="{Binding Name}" TextColor="#fcd703"/>
+            </Border>
+            <Label FontFamily="BevasNeue"/>
+        </Grid>
+        <Grid>
+            <Border Stroke="#fcd703" StrokeThickness="5" StrokeShape="RoundRectangle 10">
+                <Entry
+                    Keyboard="Email"
+                    FontFamily="BebasNeue"
+                    Placeholder="{x:Static m:Strings.Email}"
+                    Text="{Binding Email}" 
+                    TextColor="#fcd703"/>
+            </Border>
+            <Label FontFamily="BevasNeue"/>
+        </Grid>
+        <Grid>
+            <Border Stroke="#fcd703" StrokeThickness="5" StrokeShape="RoundRectangle 10">
+                <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                    <Entry
+                        IsPassword="{Binding IsPassword}"
+                        Placeholder="{x:Static m:Strings.Password}"
+                        ReturnType="Done"
+                        Text="{Binding Password}" 
+                        TextColor="#fcd703"/>
+                    <Button
+                        BackgroundColor="Transparent"
+                        BorderWidth="0"
+                        Command="{Binding ToggleIsPasswordCommand}"
+                        FontFamily="BebasNeue"
+                        FontSize="24"
+                        HorizontalOptions="End"
+                        
+                        Text="{Binding IsPassword}"
+                        TextColor="#fcd703"
+                        VerticalOptions="Center"
+                        WidthRequest="80" />
+                </Grid>
+            </Border>
+            <Label FontFamily="BevasNeue"/>
+        </Grid>
+        <Button
+            Background="#8ac7eb"
+            Command="{Binding AuthCommand}"
+            CornerRadius="8"
+            FontSize="18"
+            FontFamily="BevasNeue"
+            HeightRequest="50"
+            Text="{Binding UserStateAction}"
+            TextColor="#fcd703">
+        </Button>
+        <Image Source="applicationimage.png" />
+    </VerticalStackLayout>
+</ContentPage>
+
+    
