@@ -11,7 +11,6 @@ namespace ResturantReserve.ModelsLogic
     public class Game : GameModel
     {
         private CardsSet myCards = new CardsSet(false);
-        public List<Card> MyCardsList => myCards.GetAllCards();
 
         public Game() : base()
         {
@@ -58,50 +57,61 @@ namespace ResturantReserve.ModelsLogic
             Move = [Keys.NoMove, Keys.NoMove];
             UpdateFbMove();
         }
+
         public override Card? TakePackageCard()
         {
             if (!IsMyTurn || package == null)
                 return null;
 
-            var card = package.TakeCard();
-            if (card != null)
+            // אם יש כבר קלף פתוח שלא טופל — לא שולפים חדש
+            if (OpenedCardPending)
+                return null;
+
+            var newCard = package.TakeCard();
+            if (newCard != null)
             {
-                openedCard = card;
+                openedCard = newCard;
                 OpenedCardPending = true;
                 pickedCardsCount++;
                 PackageCardCount = package.Count;
+
+                UpdateFbMove();
+                OnGameChanged?.Invoke(this, EventArgs.Empty);
             }
 
-            return openedCard;
+            return newCard;
         }
 
 
         public Card? TakeCard()
         {
-            if (!IsMyTurn)
+            if (!IsMyTurn || package == null)
                 return null;
-            // 1) We remove once random card from player cards.
-            //    We thow this card to the garbage.
+
+            // 1) מסירים קלף אקראי מהיד
             myCards.TakeCard();
 
-            // 2) We add the opened card to player cards.
+            // 2) מוסיפים את הקלף הפתוח הנוכחי ליד (אם קיים)
             if (openedCard != null)
-            {
                 myCards.Add(openedCard);
-            }
 
-            var card = package.TakeCard();
-            if (card != null)
+            // 3) שולפים קלף חדש מהחבילה
+            var newCard = package.TakeCard();
+            if (newCard != null)
             {
-                openedCard = card;
+                openedCard = newCard; // עדכון הקלף הפתוח
                 pickedCardsCount++;
-                PackageCardCount = package.Count; 
+                PackageCardCount = package.Count;
                 IsHostTurn = !IsHostTurn;
-                Move = [Keys.TakeFromPackage, 0];  
-                UpdateFbMove(); 
+                Move = new List<int> { Keys.TakeFromPackage, 0 };
+                UpdateFbMove(); // מסנכרן מיידי
             }
-            return openedCard;
+            else
+            {
+                openedCard = null; // אם אין קלפים בחבילה, אין קלף פתוח
+            }
 
+            return newCard; // מחזיר את הקלף החדש או null
         }
 
 
@@ -307,13 +317,13 @@ namespace ResturantReserve.ModelsLogic
                 {
                     if (Move[0] == Keys.ReplaceCard)
                     {
-                        // אין צורך לעשות כלום
-                        // היד כבר עודכנה מה-Firestore
+                        // בהחלפה הקלף הפתוח נזרק
                         openedCard = null;
                     }
                     else if (Move[0] == Keys.SkipReplace)
                     {
-                        openedCard = null;
+                        // לא עושים כלום!
+                        // הקלף נשאר פתוח
                     }
                 }
 
@@ -323,6 +333,7 @@ namespace ResturantReserve.ModelsLogic
                 {
                     Play(false);
                 }
+                OpenedCardPending = IsMyTurn && openedCard != null;
                 OnGameChanged?.Invoke(this, EventArgs.Empty);
             }
             else
@@ -340,7 +351,6 @@ namespace ResturantReserve.ModelsLogic
         {
             fbd.DeleteDocument(Keys.GamesCollection, Id, OnComplete);
         }
-        // החלפת קלף מהיד עם הקלף המוצג
         public void ReplaceCard(int handIndex)
         {
             if (!IsMyTurn || openedCard == null)
@@ -357,17 +367,27 @@ namespace ResturantReserve.ModelsLogic
         }
         public void SkipReplace()
         {
-            if (!IsMyTurn || openedCard == null)
+            if (!IsMyTurn || !OpenedCardPending || package == null)
                 return;
 
-            openedCard = null;
+            // שולפים קלף חדש במקום הישן
+            var newCard = package.TakeCard();
 
-            IsHostTurn = !IsHostTurn; // מעביר את התור
+            if (newCard != null)
+            {
+                openedCard = newCard;
+                PackageCardCount = package.Count;
+            }
+
+            OpenedCardPending = false;
+
+            // מעבירים תור
+            IsHostTurn = !IsHostTurn;
 
             Move = new List<int> { Keys.SkipReplace, 0 };
+
             UpdateFbMove();
         }
-
 
     }
 }

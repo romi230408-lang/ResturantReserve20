@@ -88,7 +88,7 @@ namespace ResturantReserve.Models
             // שומר את מצב החבילה והיד ל-Firestore
             UpdateFbMove();
         }
-        public bool OpenedCardPending { get; set; } = false;
 
+        public bool OpenedCardPending { get; set; } = false;
     }
 }

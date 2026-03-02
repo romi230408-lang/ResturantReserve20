@@ -18,12 +18,13 @@ namespace ResturantReserve.ViewModels
         public ICommand ResetGameCommand { get; }
         public ICommand SelectCardCommand { get; }
         public ICommand TakeCardCommand { get; }
+        public ICommand SkipCardCommand { get; }
         public int PickedCardsCount => game.PickedCardsCount;
         public ImageSource? OpenedCardImageSource => game.OpenedCardImageSource;
         public bool IsHostTurn => game.IsHostTurn;
         public int PackageCardCount => game.PackageCardCount;
         public bool IsMyTurn => game.IsMyTurn;
-        public List<Card> MyHand => game.MyCardsList;
+        public bool OpenedCardPending => game.OpenedCardPending;
 
         public GamePageVM(Game game)
         {
@@ -35,6 +36,7 @@ namespace ResturantReserve.ViewModels
             SelectCardCommand = new Command<Card>(SelectCard);
             ResetGameCommand = new Command(ResetGame);
             TakeCardCommand = new Command(TakeCard);
+            SkipCardCommand = new Command(SkipCard);
             if (game.IsHostUser)
             {
                 StartNewGame(false);
@@ -54,7 +56,6 @@ namespace ResturantReserve.ViewModels
             OnPropertyChanged(nameof(PickedCardsCount)); 
             OnPropertyChanged(nameof(OpenedCardImageSource));
             OnPropertyChanged(nameof(IsMyTurn));
-            OnPropertyChanged(nameof(MyHand));
         }
         private void OnMessageReceived(long timeLeft)
         {
@@ -81,7 +82,7 @@ namespace ResturantReserve.ViewModels
             OnPropertyChanged(nameof(OpenedCardImageSource));
             OnPropertyChanged(nameof(PackageCardCount));
             OnPropertyChanged(nameof(IsMyTurn));
-            OnPropertyChanged(nameof(MyHand));
+            OnPropertyChanged(nameof(OpenedCardPending));
         }
 
         private void OnComplete(Task task)
@@ -119,7 +120,6 @@ namespace ResturantReserve.ViewModels
             OnPropertyChanged(nameof(OpenedCardImageSource));
             OnPropertyChanged(nameof(IsMyTurn));
             OnPropertyChanged(nameof(PickedCardsCount));
-            OnPropertyChanged(nameof(MyHand));
         }
 
         private void StartNewGame(bool restart)
@@ -131,7 +131,6 @@ namespace ResturantReserve.ViewModels
                 TakePackageCard();
 
             OnPropertyChanged(nameof(OpenedCardImageSource));
-            OnPropertyChanged(nameof(MyHand));
         }
 
         private async void OnWin(object? sender, EventArgs e)
@@ -155,7 +154,6 @@ namespace ResturantReserve.ViewModels
             {
                 OnPropertyChanged(nameof(OpenedCardImageSource));
                 OnPropertyChanged(nameof(PickedCardsCount));
-                OnPropertyChanged(nameof(MyHand));
             }
             else
             {
@@ -168,7 +166,22 @@ namespace ResturantReserve.ViewModels
             StartNewGame(true);
             OnPropertyChanged(nameof(OpenedCardImageSource));
             OnPropertyChanged(nameof(PickedCardsCount));
-            OnPropertyChanged(nameof(MyHand));
+        }
+
+
+        // פעולה שמופעלת בלחיצה על כפתור Skip
+        public void SkipCard()
+        {
+            if (!game.IsMyTurn || game.OpenedCardPending == false)
+                return;
+
+            // קוראים לפונקציה שכבר מעדכנת את התור ומסנכרנת ל-Firestore
+            game.SkipReplace();
+
+            // מעדכנים את ה-UI
+            OnPropertyChanged(nameof(OpenedCardImageSource));
+            OnPropertyChanged(nameof(PickedCardsCount));
+            OnPropertyChanged(nameof(IsMyTurn));
         }
     }
 }

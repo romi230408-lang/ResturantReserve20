@@ -4,34 +4,41 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:ResturantReserve.ViewModels"
-    x:Name="PageRoot"
     Title="GamePage"
     x:DataType="vm:GamePageVM">
-
     <VerticalStackLayout BackgroundColor="#c773eb">
-
-        <!-- שם היריב -->
         <Label HorizontalOptions="Center" Text="{Binding OpponentName}" TextColor="#fcd703" FontSize="20"/>
-
-        <!-- טיימר -->
-        <Label Margin="50"
+        <Label
+               Margin="50"
                FontSize="Title"
                HorizontalOptions="Center"
                Text="{Binding TimeLeft}" />
-
-        <!-- חבילת קלפים וקלף שנפתח -->
         <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto" HorizontalOptions="Center" ColumnSpacing="5" RowSpacing="20">
+            <ImageButton Grid.Row="0" Grid.Column="0"
+                         Source="startingcard.png"
+                         WidthRequest="80"
+                         HeightRequest="120"
+                         CornerRadius="10"/>
+            <ImageButton Grid.Row="0" Grid.Column="1"
+                         Source="startingcard.png"
+                         WidthRequest="80"
+                         HeightRequest="120"
+                         CornerRadius="10"/>
+            <ImageButton Grid.Row="0" Grid.Column="2"
+                         Source="startingcard.png"
+                         WidthRequest="80"
+                         HeightRequest="120"
+                         CornerRadius="10"/>
+            <ImageButton Grid.Row="0" Grid.Column="3"
+                         Source="startingcard.png"
+                         WidthRequest="80"
+                         HeightRequest="120"
+                         CornerRadius="10"/>
 
-            <!-- קלפים סטטיים למעלה (לא משתנים) -->
-            <ImageButton Grid.Row="0" Grid.Column="0" Source="startingcard.png" WidthRequest="80" HeightRequest="120" CornerRadius="10"/>
-            <ImageButton Grid.Row="0" Grid.Column="1" Source="startingcard.png" WidthRequest="80" HeightRequest="120" CornerRadius="10"/>
-            <ImageButton Grid.Row="0" Grid.Column="2" Source="startingcard.png" WidthRequest="80" HeightRequest="120" CornerRadius="10"/>
-            <ImageButton Grid.Row="0" Grid.Column="3" Source="startingcard.png" WidthRequest="80" HeightRequest="120" CornerRadius="10"/>
-
-            <!-- מספר קלפים בחבילה -->
-            <Label Text="{Binding PackageCardCount}" FontSize="14" HorizontalOptions="Center" TextColor="White"/>
-
-            <!-- קלף שנמשך מהחבילה -->
+            <Label Text="{Binding PackageCardCount}" 
+                   FontSize="14" 
+                   HorizontalOptions="Center"
+                   TextColor="White"/>
             <ImageButton Grid.Row="1" Grid.Column="2"
                          Source="{Binding OpenedCardImageSource}"
                          WidthRequest="80"
@@ -39,27 +46,35 @@
                          CornerRadius="10"
                          Command="{Binding TakeCardCommand}"
                          IsEnabled="{Binding IsMyTurn}"/>
+            
+            
+
+            <ImageButton Grid.Row="2" Grid.Column="0"
+                         Source="startingcard.png"
+                         WidthRequest="80"
+                         HeightRequest="120"
+                         CornerRadius="10"/>
+            <ImageButton Grid.Row="2" Grid.Column="1"
+                         Source="startingcard.png"
+                         WidthRequest="80"
+                         HeightRequest="120"
+                         CornerRadius="10"/>
+            <ImageButton Grid.Row="2" Grid.Column="2"
+                         Source="startingcard.png"
+                         WidthRequest="80"
+                         HeightRequest="120"
+                         CornerRadius="10"/>
+            <ImageButton Grid.Row="2" Grid.Column="3"
+                         Source="startingcard.png"
+                         WidthRequest="80"
+                         HeightRequest="120"
+                         CornerRadius="10"/>
         </Grid>
 
-        <!-- קלפי היד של השחקן (חתחתול) -->
-        <CollectionView ItemsSource="{Binding MyHand}" 
-                        ItemsLayout="HorizontalList"
-                        HeightRequest="140"
-                        Margin="0,10,0,0">
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <ImageButton Source="{Binding Source}"  
-                        WidthRequest="80"
-                                 HeightRequest="120"
-                                 CornerRadius="10"
-                                 Command="{Binding BindingContext.SelectCardCommand, Source={x:Reference PageRoot}}"
-                                 CommandParameter="{Binding .}" />
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-
-        <!-- שם השחקן -->
+        <Button Text="Skip" 
+             Command="{Binding SkipCardCommand}" 
+             IsEnabled="{Binding OpenedCardPending}" />
+        
         <Label HorizontalOptions="Center" Text="{Binding MyName}" TextColor="#fcd703" FontSize="20"/>
-
     </VerticalStackLayout>
 </ContentPage>

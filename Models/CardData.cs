@@ -13,20 +13,5 @@ namespace ResturantReserve.Models
         public int Index { get; set; } = 0;
 
         public CardData() { }
-
-        public string Source
-        {
-            get
-            {
-                return Type switch
-                {
-                    "Number" => $"{Value}.png",
-                    "Swap" => "swap.png",
-                    "Look" => "peek.png",
-                    "DrawTwo" => "drawTwo.png",
-                    _ => "startingCard.png"
-                };
-            }
-        }
     }
 }
