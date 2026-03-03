@@ -11,6 +11,7 @@ namespace ResturantReserve.ModelsLogic
     public class Game : GameModel
     {
         private CardsSet myCards = new CardsSet(false);
+        private bool isTakingFromPackage = false;
 
         public Game() : base()
         {
@@ -35,11 +36,6 @@ namespace ResturantReserve.ModelsLogic
                 SingleSelect = true
             };
 
-            if (IsHostUser)
-            {
-                openedCard = package.TakeCard();
-                PackageCardCount = package.Count;
-            }
             HostName = new User().Name;
             Created = DateTime.Now;
         }
@@ -60,12 +56,14 @@ namespace ResturantReserve.ModelsLogic
 
         public override Card? TakePackageCard()
         {
-            if (!IsMyTurn || package == null)
+            if (!IsMyTurn || package == null || isTakingFromPackage)
                 return null;
 
             // אם יש כבר קלף פתוח שלא טופל — לא שולפים חדש
             if (OpenedCardPending)
                 return null;
+
+            isTakingFromPackage = true;
 
             var newCard = package.TakeCard();
             if (newCard != null)
@@ -78,6 +76,8 @@ namespace ResturantReserve.ModelsLogic
                 UpdateFbMove();
                 OnGameChanged?.Invoke(this, EventArgs.Empty);
             }
+
+            isTakingFromPackage = false;
 
             return newCard;
         }
@@ -192,19 +192,6 @@ namespace ResturantReserve.ModelsLogic
                 Index = card.Index
             }).ToList();
 
-            HostHand = IsHostUser ? myCards.GetAllCards().Select(card => new CardData
-            {
-                Type = card.Type.ToString(),
-                Value = card.Value,
-                Index = card.Index
-            }).ToList() : new List<CardData>();
-            GuestHand = !IsHostUser ? myCards.GetAllCards().Select(card => new CardData
-            {
-                Type = card.Type.ToString(),
-                Value = card.Value,
-                Index = card.Index
-            }).ToList() : new List<CardData>();
-
             Dictionary<string, object> dict = new()
             {
                 { nameof(Move), Move },
@@ -213,10 +200,25 @@ namespace ResturantReserve.ModelsLogic
                 { nameof(PickedCardsCount), pickedCardsCount },
                 { nameof(PackageIndex), PackageIndex },
                 { nameof(PackageCards), PackageCards },     
-                { nameof(HostHand), HostHand },         
-                { nameof(GuestHand), GuestHand },
 
             };
+
+            var myHand = myCards.GetAllCards().Select(card => new CardData
+            {
+                Type = card.Type.ToString(),
+                Value = card.Value,
+                Index = card.Index
+            }).ToList();
+
+            if (IsHostUser)
+            {
+                dict.Add(nameof(HostHand), myHand);
+            }
+            else
+            {
+                dict.Add(nameof(GuestHand), myHand);
+            }
+
             if (openedCard != null)
             {
                 dict.Add(nameof(OpenedCardData), new CardData
@@ -259,6 +261,11 @@ namespace ResturantReserve.ModelsLogic
                 updatedGame.Id = snapshot!.Id;
                 Id =updatedGame.Id;
                 IsFull = updatedGame.IsFull;
+                if (IsHostUser && updatedGame.IsFull && !updatedGame.HandsDealt)
+                {
+                    DealOpeningHands(4);
+                    return;
+                }
                 GuestName = updatedGame.GuestName;
                 Move = updatedGame.Move;
                 IsHostTurn = updatedGame.IsHostTurn;
@@ -312,21 +319,6 @@ namespace ResturantReserve.ModelsLogic
                     });
                 }
 
-                // טיפול במהלכי החלפה / השארה
-                if (Move != null && Move.Count > 0)
-                {
-                    if (Move[0] == Keys.ReplaceCard)
-                    {
-                        // בהחלפה הקלף הפתוח נזרק
-                        openedCard = null;
-                    }
-                    else if (Move[0] == Keys.SkipReplace)
-                    {
-                        // לא עושים כלום!
-                        // הקלף נשאר פתוח
-                    }
-                }
-
                 UpdateStatus();
 
                 if (_status.CurrentStatus == GameStatus.Statuses.Play)
@@ -353,18 +345,30 @@ namespace ResturantReserve.ModelsLogic
         }
         public void ReplaceCard(int handIndex)
         {
-            if (!IsMyTurn || openedCard == null)
+            if (!IsMyTurn || !OpenedCardPending || package == null)
                 return;
 
-            var oldCard = myCards.Replace(handIndex, openedCard);
+            // מחליפים עם הקלף הפתוח
+            myCards.Replace(handIndex, openedCard);
 
-            openedCard = null; // הקלף מהחבילה "נזרק"
+            // שולפים קלף חדש בשביל התור הבא
+            var newCard = package.TakeCard();
+            if (newCard != null)
+            {
+                openedCard = newCard;
+                PackageCardCount = package.Count;
+            }
 
-            IsHostTurn = !IsHostTurn; // מעביר את התור
+            OpenedCardPending = false;
+
+            // מעבירים תור
+            IsHostTurn = !IsHostTurn;
 
             Move = new List<int> { Keys.ReplaceCard, handIndex };
+
             UpdateFbMove();
         }
+
         public void SkipReplace()
         {
             if (!IsMyTurn || !OpenedCardPending || package == null)
@@ -389,5 +393,69 @@ namespace ResturantReserve.ModelsLogic
             UpdateFbMove();
         }
 
+        public void DealOpeningHands(int count)
+        {
+            if (!IsHostUser || package == null)
+                return;
+
+            List<CardData> hostCards = new();
+            List<CardData> guestCards = new();
+
+            for (int i = 0; i < count; i++)
+            {
+                var hostCard = package.TakeCard();
+                if (hostCard != null)
+                {
+                    hostCards.Add(new CardData
+                    {
+                        Type = hostCard.Type.ToString(),
+                        Value = hostCard.Value,
+                        Index = hostCard.Index
+                    });
+                }
+
+                var guestCard = package.TakeCard();
+                if (guestCard != null)
+                {
+                    guestCards.Add(new CardData
+                    {
+                        Type = guestCard.Type.ToString(),
+                        Value = guestCard.Value,
+                        Index = guestCard.Index
+                    });
+                }
+            }
+
+            // פתיחת קלף אחרי חלוקת הידיים
+            openedCard = package.TakeCard();
+            PackageCardCount = package.Count;
+            
+            var dict = new Dictionary<string, object>
+            {
+                { nameof(HostHand), hostCards },
+                { nameof(GuestHand), guestCards },
+                { nameof(PackageCards), package.GetAllCards().Select(card => new CardData
+                    {
+                        Type = card.Type.ToString(),
+                        Value = card.Value,
+                        Index = card.Index
+                    }).ToList()
+                },
+                { nameof(PackageCardCount), PackageCardCount }
+            };
+
+            if (openedCard != null)
+            {
+                dict.Add(nameof(OpenedCardData), new CardData
+                {
+                    Type = openedCard.Type.ToString(),
+                    Value = openedCard.Value,
+                    Index = openedCard.Index
+                });
+            }
+            HandsDealt = true;
+            dict.Add(nameof(HandsDealt), true);
+            fbd.UpdateFields(Keys.GamesCollection, Id, dict, OnComplete);
+        }
     }
 }
