@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:ResturantReserve.ViewModels"
+    xmlns:model="clr-namespace:ResturantReserve.ModelsLogic"
     Title="GamePage"
     x:DataType="vm:GamePageVM">
     <VerticalStackLayout BackgroundColor="#c773eb">
@@ -46,29 +47,28 @@
                          CornerRadius="10"
                          Command="{Binding TakeCardCommand}"
                          IsEnabled="{Binding IsMyTurn}"/>
-            
-            
 
-            <ImageButton Grid.Row="2" Grid.Column="0"
-                         Source="startingcard.png"
-                         WidthRequest="80"
-                         HeightRequest="120"
-                         CornerRadius="10"/>
-            <ImageButton Grid.Row="2" Grid.Column="1"
-                         Source="startingcard.png"
-                         WidthRequest="80"
-                         HeightRequest="120"
-                         CornerRadius="10"/>
-            <ImageButton Grid.Row="2" Grid.Column="2"
-                         Source="startingcard.png"
-                         WidthRequest="80"
-                         HeightRequest="120"
-                         CornerRadius="10"/>
-            <ImageButton Grid.Row="2" Grid.Column="3"
-                         Source="startingcard.png"
-                         WidthRequest="80"
-                         HeightRequest="120"
-                         CornerRadius="10"/>
+
+
+            <HorizontalStackLayout Grid.Row="2"
+                       Grid.ColumnSpan="5"
+                       HorizontalOptions="Center"
+                       Spacing="10"
+                       BindableLayout.ItemsSource="{Binding MyCards}">
+
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="model:Card">
+                        <ImageButton
+            Source="{Binding Source}"
+            WidthRequest="80"
+            HeightRequest="120"
+            CornerRadius="10"
+            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:GamePageVM}}, Path=SelectCardCommand}"
+            CommandParameter="{Binding .}" />
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+
+            </HorizontalStackLayout>
         </Grid>
 
         <Button Text="Skip" 

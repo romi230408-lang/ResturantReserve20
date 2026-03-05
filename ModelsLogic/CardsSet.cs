@@ -99,7 +99,7 @@ namespace ResturantReserve.ModelsLogic
         {
             return cards.ToList();  // בהנחה שיש שדה cards פנימי List<Card>
         }
-
+        public List<Card> Cards => cards;
         public void LoadFromList(List<Card> cardsList)
         {
             Reset(false);

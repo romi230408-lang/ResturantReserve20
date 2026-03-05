@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Maui.Controls;
 using Plugin.CloudFirestore;
+using Plugin.CloudFirestore.Attributes;
 using ResturantReserve.Models;
 using System.Collections.ObjectModel;
 using System.Net.NetworkInformation;
@@ -12,6 +13,8 @@ namespace ResturantReserve.ModelsLogic
     {
         private CardsSet myCards = new CardsSet(false);
         private bool isTakingFromPackage = false;
+        [Ignored]
+        public List<Card> MyCards => myCards.GetAllCards();
 
         public Game() : base()
         {
@@ -457,5 +460,7 @@ namespace ResturantReserve.ModelsLogic
             dict.Add(nameof(HandsDealt), true);
             fbd.UpdateFields(Keys.GamesCollection, Id, dict, OnComplete);
         }
+
+
     }
 }

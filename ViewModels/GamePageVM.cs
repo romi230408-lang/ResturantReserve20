@@ -25,12 +25,20 @@ namespace ResturantReserve.ViewModels
         public int PackageCardCount => game.PackageCardCount;
         public bool IsMyTurn => game.IsMyTurn;
         public bool OpenedCardPending => game.OpenedCardPending;
+        public ObservableCollection<Card> MyCards { get; } = new();
+
 
         public GamePageVM(Game game)
         {
+            Console.WriteLine("VM ctor - start");
+            this.game = game;
+            Console.WriteLine("VM ctor - game assigned");
             game.OnGameChanged += OnGameChanged;
             game.DisplayChanged += OnDisplayChanged;
-            this.game = game;
+            Console.WriteLine("VM ctor - events registered");
+            SyncMyCardsFromGame();
+            Console.WriteLine("VM ctor - after SyncMyCardsFromGame");
+            
             if (!game.IsHostUser)
                 game.UpdateGuestUser(OnComplete);
             SelectCardCommand = new Command<Card>(SelectCard);
@@ -48,6 +56,7 @@ namespace ResturantReserve.ViewModels
             });
 
             WeakReferenceMessenger.Default.Send(new AppMessage<long>(10000));
+            Console.WriteLine("VM ctor - end");
 
         }
         private void OnDisplayChanged(object? sender, DisplayMoveArgs e)
@@ -83,6 +92,7 @@ namespace ResturantReserve.ViewModels
             OnPropertyChanged(nameof(PackageCardCount));
             OnPropertyChanged(nameof(IsMyTurn));
             OnPropertyChanged(nameof(OpenedCardPending));
+            SyncMyCardsFromGame(); // במקום OnPropertyChanged(nameof(MyCards))
         }
 
         private void OnComplete(Task task)
@@ -182,6 +192,13 @@ namespace ResturantReserve.ViewModels
             OnPropertyChanged(nameof(OpenedCardImageSource));
             OnPropertyChanged(nameof(PickedCardsCount));
             OnPropertyChanged(nameof(IsMyTurn));
+        }
+
+        private void SyncMyCardsFromGame()
+        {
+            MyCards.Clear();
+            foreach (var card in game.MyCards) // כאן game.MyCards יכול להישאר List<Card>
+                MyCards.Add(card);
         }
     }
 }
