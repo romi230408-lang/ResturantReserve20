@@ -91,6 +91,9 @@ namespace ResturantReserve.Models
 
         public bool OpenedCardPending { get; set; } = false;
         public bool HandsDealt { get; set; }
+        public string WinnerName { get; set; } = "";
+        public string HostId { get; set; }
+        public string GuestId { get; set; }
 
     }
 }

@@ -26,6 +26,7 @@ namespace ResturantReserve.ViewModels
         public bool IsMyTurn => game.IsMyTurn;
         public bool OpenedCardPending => game.OpenedCardPending;
         public ObservableCollection<Card> MyCards { get; } = new();
+        public ICommand HatHatulCommand { get; }
 
 
         public GamePageVM(Game game)
@@ -35,6 +36,7 @@ namespace ResturantReserve.ViewModels
             Console.WriteLine("VM ctor - game assigned");
             game.OnGameChanged += OnGameChanged;
             game.DisplayChanged += OnDisplayChanged;
+            game.OnWin += OnWin;
             Console.WriteLine("VM ctor - events registered");
             SyncMyCardsFromGame();
             Console.WriteLine("VM ctor - after SyncMyCardsFromGame");
@@ -45,6 +47,7 @@ namespace ResturantReserve.ViewModels
             ResetGameCommand = new Command(ResetGame);
             TakeCardCommand = new Command(TakeCard);
             SkipCardCommand = new Command(SkipCard);
+            HatHatulCommand = new Command(() => game.HatHatul());
             if (game.IsHostUser)
             {
                 StartNewGame(false);
@@ -145,11 +148,16 @@ namespace ResturantReserve.ViewModels
 
         private async void OnWin(object? sender, EventArgs e)
         {
+            bool iWon = game.WinnerName == game.MyName;
+
+            string title = iWon ? "🎉 ניצחת!" : "😢 הפסדת";
+            string message = iWon ? "יש לך את סכום הקלפים הנמוך ביותר!" : "ליריב יש סכום נמוך יותר";
+
             bool newGame = await Application.Current!.MainPage!.DisplayAlert(
-                "Bravo! You Won",
-                "Start new game or quit?",
-                "Start new Game",
-                "Quit");
+                title,
+                message,
+                "משחק חדש",
+                "יציאה");
 
             if (newGame)
                 ResetGame();
@@ -200,5 +208,7 @@ namespace ResturantReserve.ViewModels
             foreach (var card in game.MyCards) // כאן game.MyCards יכול להישאר List<Card>
                 MyCards.Add(card);
         }
+        
+
     }
 }

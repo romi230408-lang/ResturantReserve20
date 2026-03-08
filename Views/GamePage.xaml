@@ -48,7 +48,7 @@
                          Command="{Binding TakeCardCommand}"
                          IsEnabled="{Binding IsMyTurn}"/>
 
-
+            
 
             <HorizontalStackLayout Grid.Row="2"
                        Grid.ColumnSpan="5"
@@ -74,7 +74,20 @@
         <Button Text="Skip" 
              Command="{Binding SkipCardCommand}" 
              IsEnabled="{Binding OpenedCardPending}" />
-        
+
+        <Button Text="חתחתול"
+        Command="{Binding HatHatulCommand}"
+        IsEnabled="{Binding IsMyTurn}"
+        BackgroundColor="#ff9f1c"
+        TextColor="White"
+        FontSize="26"
+        FontAttributes="Bold"
+        CornerRadius="25"
+        HeightRequest="60"
+        WidthRequest="200"
+        HorizontalOptions="Center"
+        Margin="0,20,0,0"/>
+
         <Label HorizontalOptions="Center" Text="{Binding MyName}" TextColor="#fcd703" FontSize="20"/>
     </VerticalStackLayout>
 </ContentPage>

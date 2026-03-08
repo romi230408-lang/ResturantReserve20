@@ -26,18 +26,6 @@ namespace ResturantReserve.Models
             {
                 Source = CardsImages[value + 1];
             }
-            else if (type == CardType.Look)
-            {
-                Source = "peek.png";
-            }
-            else if (type == CardType.Swap)
-            {
-                Source = "swap.png";
-            }
-            else if (type == CardType.DrawTwo)
-            {
-                Source = "drawTwo.png";
-            }
 
             Aspect = Aspect.AspectFit;
             HorizontalOptions = new LayoutOptions(LayoutAlignment.Start, false);

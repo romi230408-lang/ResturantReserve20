@@ -20,16 +20,12 @@ namespace ResturantReserve.ModelsLogic
         private void FillPackage()
         {
             // Todo: remove this for of temp
-            for (int temp = 0; temp < 20; temp++)
+            for (int temp = 0; temp < 6; temp++)
             {
                 for (int value = 0; value <= 9; value++)
                 {
                     cards.Add(new Card(CardModel.CardType.Number, value));
                 }
-
-                cards.Add(new Card(CardModel.CardType.Look, 0));
-                cards.Add(new Card(CardModel.CardType.Swap, 0));
-                cards.Add(new Card(CardModel.CardType.DrawTwo, 0));
             }
         }
 

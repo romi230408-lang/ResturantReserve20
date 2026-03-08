@@ -11,6 +11,7 @@ namespace ResturantReserve.ModelsLogic
 {
     public class Game : GameModel
     {
+        public event EventHandler? OnWin;
         private CardsSet myCards = new CardsSet(false);
         private bool isTakingFromPackage = false;
         [Ignored]
@@ -67,8 +68,12 @@ namespace ResturantReserve.ModelsLogic
                 return null;
 
             isTakingFromPackage = true;
-
+            System.Diagnostics.Debug.WriteLine($"PACKAGE COUNT BEFORE TAKE: {package.Count}");
             var newCard = package.TakeCard();
+            if (newCard == null)
+            {
+                System.Diagnostics.Debug.WriteLine("TAKE CARD RETURNED NULL");
+            }
             if (newCard != null)
             {
                 openedCard = newCard;
@@ -221,7 +226,7 @@ namespace ResturantReserve.ModelsLogic
             {
                 dict.Add(nameof(GuestHand), myHand);
             }
-
+            System.Diagnostics.Debug.WriteLine($"OPENED CARD: {openedCard?.Value}");
             if (openedCard != null)
             {
                 dict.Add(nameof(OpenedCardData), new CardData
@@ -275,6 +280,12 @@ namespace ResturantReserve.ModelsLogic
                 PackageCardCount = updatedGame.PackageCardCount;
                 pickedCardsCount = updatedGame.pickedCardsCount;
                 PackageIndex = updatedGame.PackageIndex;
+                WinnerName = updatedGame.WinnerName;
+
+                if (!string.IsNullOrEmpty(WinnerName))
+                {
+                    OnWin?.Invoke(this, EventArgs.Empty);
+                }
                 if (updatedGame.OpenedCardData != null)
                 {
                     var cd = updatedGame.OpenedCardData;
@@ -461,6 +472,41 @@ namespace ResturantReserve.ModelsLogic
             fbd.UpdateFields(Keys.GamesCollection, Id, dict, OnComplete);
         }
 
+        public bool CheckWinner()
+        {
+            int mySum = MyCards.Sum(c => c.Value);
 
+            List<CardData>? opponentHand = IsHostUser ? GuestHand : HostHand;
+
+            int opponentSum = opponentHand?.Sum(c => c.Value) ?? int.MaxValue;
+
+            return mySum <= opponentSum;
+        }
+
+        public void HatHatul()
+        {
+            if (!IsMyTurn)
+                return;
+
+            int mySum = MyCards.Sum(c => c.Value);
+
+            List<CardData>? opponentHand = IsHostUser ? GuestHand : HostHand;
+            if (opponentHand == null)
+                return;
+
+            int opponentSum = opponentHand?.Sum(c => c.Value) ?? int.MaxValue;
+
+            if (mySum < opponentSum)
+                WinnerName = MyName;
+            else
+                WinnerName = OpponentName;
+
+            Dictionary<string, object> dict = new()
+    {
+        { nameof(WinnerName), WinnerName }
+    };
+
+            fbd.UpdateFields(Keys.GamesCollection, Id, dict, OnComplete);
+        }
     }
 }
