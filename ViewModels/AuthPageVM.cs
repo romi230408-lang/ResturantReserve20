@@ -51,7 +51,7 @@ namespace ResturantReserve.ViewModels
             }
         }
         public bool IsPassword { get; set; } = true;
-        public string EyeIcon => IsPassword ? "eye_closed.png" : "eye_open.png";
+        public string EyeIcon => IsPassword ? "eyeclose.png" : "eyeopen.png";
 
         public AuthPageVM()
         {

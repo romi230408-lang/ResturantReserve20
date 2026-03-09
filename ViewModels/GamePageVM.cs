@@ -6,6 +6,7 @@ using ResturantReserve.ModelsLogic;
 using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Windows.Input;
+using ResturantReserve.Views;
 
 namespace ResturantReserve.ViewModels
 {
@@ -177,14 +178,14 @@ namespace ResturantReserve.ViewModels
             string title = iWon ? "😢 הפסדת" : "🎉 ניצחת!"; 
             string message = iWon ? "ליריב יש סכום נמוך יותר" : "יש לך את סכום הקלפים הנמוך ביותר!";
 
-            bool newGame = await Application.Current!.MainPage!.DisplayAlert(
+            bool goHome = await Application.Current!.MainPage!.DisplayAlert(
                 title,
                 message,
-                "משחק חדש",
+                "מעבר לדף הבית",
                 "יציאה");
 
-            if (newGame)
-                ResetGame();
+            if (goHome)
+                Application.Current.MainPage = new MainPage();
             else
                 Application.Current?.Quit();
         }
