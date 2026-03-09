@@ -43,24 +43,25 @@
         <Grid>
             <Border Stroke="#fcd703" StrokeThickness="5" StrokeShape="RoundRectangle 10">
                 <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+
                     <Entry
                         IsPassword="{Binding IsPassword}"
                         Placeholder="{x:Static m:Strings.Password}"
                         ReturnType="Done"
-                        Text="{Binding Password}" 
+                        Text="{Binding Password}"
                         TextColor="#fcd703"/>
-                    <Button
+
+                    <ImageButton
+                        Grid.Column="1"
                         BackgroundColor="Transparent"
                         BorderWidth="0"
                         Command="{Binding ToggleIsPasswordCommand}"
-                        FontFamily="BebasNeue"
-                        FontSize="24"
+                        Source="{Binding EyeIcon}"
+                        HeightRequest="30"
+                        WidthRequest="30"
                         HorizontalOptions="End"
-                        
-                        Text="{Binding IsPassword}"
-                        TextColor="#fcd703"
-                        VerticalOptions="Center"
-                        WidthRequest="80" />
+                        VerticalOptions="Center"/>
+
                 </Grid>
             </Border>
             <Label FontFamily="BevasNeue"/>

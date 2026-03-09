@@ -27,19 +27,17 @@ namespace ResturantReserve.ViewModels
         public bool OpenedCardPending => game.OpenedCardPending;
         public ObservableCollection<Card> MyCards { get; } = new();
         public ICommand HatHatulCommand { get; }
-
+        private bool timerStarted = false;
+        public bool ShowCards { get; set; } = false;
 
         public GamePageVM(Game game)
         {
-            Console.WriteLine("VM ctor - start");
-            this.game = game;
-            Console.WriteLine("VM ctor - game assigned");
+            this.game = game;;
             game.OnGameChanged += OnGameChanged;
             game.DisplayChanged += OnDisplayChanged;
             game.OnWin += OnWin;
-            Console.WriteLine("VM ctor - events registered");
+            game.OnRevealCards += RevealCards;
             SyncMyCardsFromGame();
-            Console.WriteLine("VM ctor - after SyncMyCardsFromGame");
             
             if (!game.IsHostUser)
                 game.UpdateGuestUser(OnComplete);
@@ -48,19 +46,16 @@ namespace ResturantReserve.ViewModels
             TakeCardCommand = new Command(TakeCard);
             SkipCardCommand = new Command(SkipCard);
             HatHatulCommand = new Command(() => game.HatHatul());
-            if (game.IsHostUser)
-            {
-                StartNewGame(false);
-            }
 
             WeakReferenceMessenger.Default.Register<AppMessage<long>>(this, (r, m) =>
             {
                 OnMessageReceived(m.Value);
             });
 
-            WeakReferenceMessenger.Default.Send(new AppMessage<long>(10000));
-            Console.WriteLine("VM ctor - end");
-
+            WeakReferenceMessenger.Default.Register<AppMessage<TimerSetting>>(this, (r, m) =>
+            {
+                StartTimer(m.Value);
+            });
         }
         private void OnDisplayChanged(object? sender, DisplayMoveArgs e)
         {
@@ -72,6 +67,26 @@ namespace ResturantReserve.ViewModels
         private void OnMessageReceived(long timeLeft)
         {
             TimeLeft = timeLeft / 1000f;
+        }
+        private async void StartTimer(TimerSetting setting)
+        {
+            long remaining = setting.MillisInFuture;
+
+            while (remaining > 0)
+            {
+                WeakReferenceMessenger.Default.Send(new AppMessage<long>(remaining));
+
+                await Task.Delay((int)setting.CountDownInterval);
+                remaining -= setting.CountDownInterval;
+            }
+
+            // שולח 0 בסיום
+            WeakReferenceMessenger.Default.Send(new AppMessage<long>(0));
+            // --- כאן מתחילים את המשחק:
+            if (game.IsHostUser && game.IsFull)
+            {
+                game.DealOpeningHands(4);
+            }
         }
 
         public double TimeLeft
@@ -96,6 +111,13 @@ namespace ResturantReserve.ViewModels
             OnPropertyChanged(nameof(IsMyTurn));
             OnPropertyChanged(nameof(OpenedCardPending));
             SyncMyCardsFromGame(); // במקום OnPropertyChanged(nameof(MyCards))
+            if (game.IsFull && !timerStarted)
+            {
+                timerStarted = true;
+
+                TimerSetting timerSetting = new TimerSetting(10000, 1000);
+                WeakReferenceMessenger.Default.Send(new AppMessage<TimerSetting>(timerSetting));
+            }
         }
 
         private void OnComplete(Task task)
@@ -130,6 +152,8 @@ namespace ResturantReserve.ViewModels
                 game.SelectCard(selectedCard); // החלפה או דחייה
             }
 
+            selectedCard.IsRevealed = true;
+
             OnPropertyChanged(nameof(OpenedCardImageSource));
             OnPropertyChanged(nameof(IsMyTurn));
             OnPropertyChanged(nameof(PickedCardsCount));
@@ -148,10 +172,10 @@ namespace ResturantReserve.ViewModels
 
         private async void OnWin(object? sender, EventArgs e)
         {
-            bool iWon = game.WinnerName == game.MyName;
+            bool iWon = game.WinnerName?.Trim() == game.MyName?.Trim();
 
-            string title = iWon ? "🎉 ניצחת!" : "😢 הפסדת";
-            string message = iWon ? "יש לך את סכום הקלפים הנמוך ביותר!" : "ליריב יש סכום נמוך יותר";
+            string title = iWon ? "😢 הפסדת" : "🎉 ניצחת!"; 
+            string message = iWon ? "ליריב יש סכום נמוך יותר" : "יש לך את סכום הקלפים הנמוך ביותר!";
 
             bool newGame = await Application.Current!.MainPage!.DisplayAlert(
                 title,
@@ -208,7 +232,11 @@ namespace ResturantReserve.ViewModels
             foreach (var card in game.MyCards) // כאן game.MyCards יכול להישאר List<Card>
                 MyCards.Add(card);
         }
-        
 
+        private void RevealCards(object? sender, EventArgs e)
+        {
+            foreach (var card in MyCards)
+                card.IsRevealed = true;
+        }
     }
 }

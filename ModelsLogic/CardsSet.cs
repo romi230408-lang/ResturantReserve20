@@ -19,7 +19,6 @@ namespace ResturantReserve.ModelsLogic
 
         private void FillPackage()
         {
-            // Todo: remove this for of temp
             for (int temp = 0; temp < 6; temp++)
             {
                 for (int value = 0; value <= 9; value++)
@@ -93,14 +92,14 @@ namespace ResturantReserve.ModelsLogic
 
         public List<Card> GetAllCards()
         {
-            return cards.ToList();  // בהנחה שיש שדה cards פנימי List<Card>
+            return cards.ToList();  
         }
         public List<Card> Cards => cards;
         public void LoadFromList(List<Card> cardsList)
         {
             Reset(false);
             foreach (var card in cardsList)
-                this.cards.Add(card);  // הוסף לרשימה הפנימית
+                this.cards.Add(card);  
         }
         public Card? Replace(int index, Card newCard)
         {

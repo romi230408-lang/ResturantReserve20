@@ -8,6 +8,7 @@ namespace ResturantReserve.Models
 {
     public class CardData
     {
+        public bool IsRevealed { get; set; } = false;
         public string Type { get; set; } = "Number";
         public int Value { get; set; } = 0;
         public int Index { get; set; } = 0;

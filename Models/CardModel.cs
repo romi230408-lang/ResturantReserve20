@@ -17,6 +17,11 @@ namespace ResturantReserve.Models
         public int Value { get; set; }     
         public bool IsSelected { get; set; } 
         public int Index { get; set; }
+        public bool IsRevealed { get; set; } = false;
+        public ImageSource DisplaySource => IsRevealed
+      ? Source
+      : ImageSource.FromFile("startingcard.png");
+
 
         public CardModel(CardType type, int value)
         {
@@ -24,7 +29,7 @@ namespace ResturantReserve.Models
             Value = value;
             if (type == CardType.Number && value >= 0 && value <= 9)
             {
-                Source = CardsImages[value + 1];
+                Source = ImageSource.FromFile(CardsImages[value + 1]);
             }
 
             Aspect = Aspect.AspectFit;

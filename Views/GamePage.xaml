@@ -59,7 +59,7 @@
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="model:Card">
                         <ImageButton
-            Source="{Binding Source}"
+            Source="{Binding DisplaySource}"
             WidthRequest="80"
             HeightRequest="120"
             CornerRadius="10"

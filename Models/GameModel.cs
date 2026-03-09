@@ -94,6 +94,7 @@ namespace ResturantReserve.Models
         public string WinnerName { get; set; } = "";
         public string HostId { get; set; }
         public string GuestId { get; set; }
+        public bool CardsRevealed { get; protected set; } = false;
 
     }
 }

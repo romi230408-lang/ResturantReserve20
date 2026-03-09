@@ -12,6 +12,7 @@ namespace ResturantReserve.ModelsLogic
     public class Game : GameModel
     {
         public event EventHandler? OnWin;
+        public event EventHandler? OnRevealCards;
         private CardsSet myCards = new CardsSet(false);
         private bool isTakingFromPackage = false;
         [Ignored]
@@ -197,7 +198,8 @@ namespace ResturantReserve.ModelsLogic
             {
                 Type = card.Type.ToString(),
                 Value = card.Value,
-                Index = card.Index
+                Index = card.Index,
+                IsRevealed = card.IsRevealed
             }).ToList();
 
             Dictionary<string, object> dict = new()
@@ -215,7 +217,8 @@ namespace ResturantReserve.ModelsLogic
             {
                 Type = card.Type.ToString(),
                 Value = card.Value,
-                Index = card.Index
+                Index = card.Index,
+                IsRevealed = card.IsRevealed
             }).ToList();
 
             if (IsHostUser)
@@ -269,11 +272,6 @@ namespace ResturantReserve.ModelsLogic
                 updatedGame.Id = snapshot!.Id;
                 Id =updatedGame.Id;
                 IsFull = updatedGame.IsFull;
-                if (IsHostUser && updatedGame.IsFull && !updatedGame.HandsDealt)
-                {
-                    DealOpeningHands(4);
-                    return;
-                }
                 GuestName = updatedGame.GuestName;
                 Move = updatedGame.Move;
                 IsHostTurn = updatedGame.IsHostTurn;
@@ -305,7 +303,6 @@ namespace ResturantReserve.ModelsLogic
                 }
 
 
-                // ← שינוי 1: CardModel במקום Card + בניית Card חדש
                 package.Reset(false);
                 if (updatedGame.PackageCards != null)
                 {
@@ -321,7 +318,6 @@ namespace ResturantReserve.ModelsLogic
                  
                 System.Diagnostics.Debug.WriteLine($"PACKAGE COUNT AFTER REBUILD: {package.Count}");
 
-                // ← שינוי 2: CardModel במקום Card + בניית Card חדש
                 myCards.Reset(false);
                 var myHand = IsHostUser ? updatedGame.HostHand : updatedGame.GuestHand;
                 foreach (CardData cd in myHand)
@@ -329,10 +325,15 @@ namespace ResturantReserve.ModelsLogic
                     var type = (CardModel.CardType)Enum.Parse(typeof(CardModel.CardType), cd.Type);
                     myCards.Add(new Card(type, cd.Value)
                     {
-                        Index = cd.Index
+                        Index = cd.Index,
+                        IsRevealed = cd.IsRevealed
                     });
                 }
-
+                if (updatedGame.CardsRevealed)
+                {
+                    foreach (var card in myCards.GetAllCards())
+                        card.IsRevealed = true;
+                }
                 UpdateStatus();
 
                 if (_status.CurrentStatus == GameStatus.Statuses.Play)
@@ -480,7 +481,7 @@ namespace ResturantReserve.ModelsLogic
 
             int opponentSum = opponentHand?.Sum(c => c.Value) ?? int.MaxValue;
 
-            return mySum <= opponentSum;
+            return mySum < opponentSum;
         }
 
         public void HatHatul()
@@ -501,12 +502,30 @@ namespace ResturantReserve.ModelsLogic
             else
                 WinnerName = OpponentName;
 
+            RevealAllCards();
+
             Dictionary<string, object> dict = new()
     {
         { nameof(WinnerName), WinnerName }
     };
 
             fbd.UpdateFields(Keys.GamesCollection, Id, dict, OnComplete);
+        }
+
+        public void RevealAllCards()
+        {
+            CardsRevealed = true;
+
+            foreach (var card in MyCards)
+                card.IsRevealed = true;
+
+            OnRevealCards?.Invoke(this, EventArgs.Empty);
+
+            // עדכון Firestore
+            fbd.UpdateFields(Keys.GamesCollection, Id, new Dictionary<string, object>
+    {
+        { nameof(CardsRevealed), true }
+    }, OnComplete);
         }
     }
 }

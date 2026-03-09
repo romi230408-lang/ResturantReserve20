@@ -15,8 +15,7 @@ namespace ResturantReserve.ModelsLogic
             {
                 if (task.IsCompletedSuccessfully)
                 {
-                    // עכשיו יש Id אמיתי
-                    currentGame.InitializeNewGame();  // ✅ רק כאן
+                    currentGame.InitializeNewGame();  
 
                     OnGameAdded?.Invoke(this, currentGame);
                 }

@@ -25,9 +25,7 @@ namespace ResturantReserve.ViewModels
                     games.CurrentGame = value;
                     MainThread.InvokeOnMainThreadAsync(() =>
                     {
-                        Console.WriteLine("Before navigate to GamePage");
                         Shell.Current.Navigation.PushAsync(new GamePage(value), true);
-                        Console.WriteLine("After navigate to GamePage");
                     });
                 }
             }
